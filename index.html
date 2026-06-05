@@ -36,16 +36,17 @@
         wrap.appendChild(vid);
       }
 
-      // 2. Add WhatsApp after email — append outside React's text nodes
+      // 2. Add WhatsApp after the email paragraph (plain text, no <a> tag)
       if (!document.getElementById('wa-inject')) {
-        var emailEl = document.querySelector('a[href="mailto:contacto@pulsoai.cl"]');
-        if (!emailEl) return;
-        var container = emailEl.closest('p,div,span[class]') || emailEl.parentElement;
+        var emailP = Array.from(document.querySelectorAll('p')).find(function(el) {
+          return el.textContent.includes('contacto@pulsoai');
+        });
+        if (!emailP) return;
         var waDiv = document.createElement('div');
         waDiv.id = 'wa-inject';
-        waDiv.style.cssText = 'margin-top:8px;font-family:inherit;font-size:inherit;';
+        waDiv.style.cssText = 'margin-top:8px;font-family:inherit;font-size:0.75rem;text-align:center;';
         waDiv.innerHTML = '<a href="https://wa.me/56974838536" target="_blank" rel="noopener noreferrer" style="color:#25D366;font-weight:bold;text-decoration:none;">💬 Chatea por WhatsApp</a>';
-        container.insertAdjacentElement('afterend', waDiv);
+        emailP.insertAdjacentElement('afterend', waDiv);
       }
 
       _patched = true;
