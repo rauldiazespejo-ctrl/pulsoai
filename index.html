@@ -14,5 +14,65 @@
   </head>
   <body>
     <div id="root"></div>
+  <script>
+    // Inject WhatsApp link and animated logo after React renders
+    function applyPatches() {
+      // 1. Replace static logo img with animated video
+      const logoImgs = document.querySelectorAll('img[src*="logo-pulsoai"]');
+      logoImgs.forEach(img => {
+        if (img.closest('[class*="w-36"]') || img.classList.contains('object-contain')) {
+          const video = document.createElement('video');
+          video.src = '/pulsoai_logo.webm';
+          video.autoplay = true;
+          video.loop = true;
+          video.muted = true;
+          video.playsInline = true;
+          video.className = img.className;
+          video.style.cssText = img.style.cssText;
+          img.parentNode.replaceChild(video, img);
+        }
+      });
+
+      // 2. Add WhatsApp link next to email
+      const emailLinks = document.querySelectorAll('a[href="mailto:contacto@pulsoai.cl"]');
+      emailLinks.forEach(el => {
+        const parent = el.parentNode;
+        if (!parent.querySelector('.wa-link')) {
+          const sep = document.createElement('span');
+          sep.textContent = ' | ';
+          const wa = document.createElement('a');
+          wa.href = 'https://wa.me/56974838536';
+          wa.target = '_blank';
+          wa.rel = 'noopener noreferrer';
+          wa.className = 'wa-link';
+          wa.style.cssText = 'color:#25D366;font-weight:bold;text-decoration:none;';
+          wa.textContent = '💬 Chatea por WhatsApp';
+          parent.appendChild(sep);
+          parent.appendChild(wa);
+        }
+      });
+
+      // 3. Also patch plain text "contacto@pulsoai.cl" if not wrapped in <a>
+      const allText = document.querySelectorAll('*');
+      allText.forEach(el => {
+        if (el.children.length === 0 && el.textContent.includes('contacto@pulsoai.cl') && !el.closest('.wa-link')) {
+          const txt = el.textContent;
+          if (txt.includes('escribenos') || txt.includes('escríbenos')) {
+            el.innerHTML = 'o escríbenos a <a href="mailto:contacto@pulsoai.cl" style="color:inherit">contacto@pulsoai.cl</a> | <a href="https://wa.me/56974838536" target="_blank" rel="noopener noreferrer" class="wa-link" style="color:#25D366;font-weight:bold">💬 Chatea por WhatsApp</a>';
+          }
+        }
+      });
+    }
+
+    // Run after React mounts (observe DOM changes)
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('img[src*="logo-pulsoai"]') || document.querySelector('a[href="mailto:contacto@pulsoai.cl"]')) {
+        applyPatches();
+      }
+    });
+    observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+    // Also run on load as fallback
+    window.addEventListener('load', () => setTimeout(applyPatches, 500));
+  </script>
   </body>
 </html>
